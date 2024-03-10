@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Сайт с опросом</title>
+  <style>
+    @font-face {
+      font-family: "akzentica4fmedium";
+      src: url(./fonts/akzentica4fmedium-webfont.woff) format("woff"),
+        url(./fonts/akzentica4fmedium-webfont.woff2) format("woff2");
+    }
+
+    body {
+      background-color: black;
+      color: white;
+      font-family: akzentica4fmedium, Arial;
+      margin: 0;
+      padding: 0;
+    }
+
+    .video-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1; /* Поместите видео под другие элементы */
+    }
+
+    video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .background-image {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-image: url(./images/fon.jpeg);
+      background-size: contain;
+      background-position: center center;
+      background-attachment: fixed;
+      background-repeat: no-repeat;
+      z-index: 0; /* Убедитесь, что изображение находится под видео */
+    }
+
+    .container {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+
+    .title {
+      font-size: 36px;
+      margin-bottom: 20px;
+    }
+
+    .container>button {
+      background-color: rgb(154, 5, 5);
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      font-size: 21px;
+      cursor: pointer;
+    }
+
+    .button:hover {
+      background-color: rgb(119, 2, 2);
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1;
+      left: 100;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(0, 0, 0, 0.5);
+      animation: fadeIn 0.9s ease;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+
+      to {
+        opacity: 1;
+      }
+    }
+
+    .modal-content {
+      background-color: #fefefe;
+      margin: auto;
+      padding: 40px;
+      border: 1px solid #888;
+      width: 600px;
+      height: 400px;
+      border-radius: 5px;
+      color: black;
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 16px;
+    }
+
+    .close {
+      color: #aaa;
+      float: right;
+      font-size: 28px;
+      font-weight: bold;
+    }
+
+    .close:hover,
+    .close:focus {
+      color: black;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    .prev-btn,
+    .next-btn {
+      position: absolute;
+      bottom: 10px;
+      font-family: akzentica4fmedium, Arial;
+      background-color: rgb(154, 5, 5);
+      color: white;
+      padding: 10px 20px;
+    }
+
+    .prev-btn {
+      left: 10px;
+    }
+
+    .next-btn {
+      right: 10px;
+    }
+
+    .question {
+      padding: 10px;
+      border-radius: 5px;
+      margin-bottom: 10px;
+    }
+
+    input[type="radio"]:checked+label {
+      background-color: #333;
+      color: white;
+      border-radius: 2px;
+      padding: 3px;
+    }
+
+    #questionCounter {
+      font-size: 1em;
+      font-weight: bold;
+      color: rgb(154, 5, 5);
+    }
+
+    .label {
+      font-size: 200px;
+      line-height: 200px;
+    }
+
+    label {
+      display: inline;
+      list-style: disc;
+      line-height: 30px;
+      padding-top: 5px;
+      padding-bottom: 5px;
+    }
+
+    input[type="checkbox"]:checked+label {
+      background-color: rgb(192, 139, 119);
+    }
+  </style>
+</head>
+
+<body>
+  <div class="video-container">
+    <video autoplay loop muted>
+      <source src="./images/video-fon.mp4" type="video/mp4">
+      Your browser does not support the video tag.
+    </video>
+    <div class="background-image"></div>
+  </div>
+
+  <div class="container">
+    <button class="button" onclick="openModal()">Пройти опрос</button>
+  </div>
+
+  <div id="myModal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeModal()">&times;</span>
+      <p id="questionCounter">1/5</p>
+      <p id="question1">У тебя есть эскиз татуировки?</p>
+      <form id="form1" name="Form">
+        <input type="checkbox" id="yes" name="tattoo" value="yes" onclick="handleCheckbox(this)" />
+        <label for="yes">>Да, есть</label><br />
+        <input type="checkbox" id="idea" name="tattoo" value="idea" onclick="handleCheckbox(this)" />
+        <label for="idea">Нет, но есть примерная идея</label><br />
+        <input type="checkbox" id="consultation" name="tattoo" value="consultation" onclick="handleCheckbox(this)" />
+        <label for="consultation">Нет, нужна консультация</label><br /><br />
+      </form>
+      <button class="button prev-btn" onclick="prevQuestion()">
+        << Предыдущий </button>
+          <button class="button next-btn" onclick="nextQuestion()">
+            Следующий >>
+          </button>
+    </div>
+  </div>
+
+  <script>
+    var modal = document.getElementById("myModal");
+    var questionIndex = 0;
+    var questions = [
+      "У тебя есть эскиз татуировки?",
+      "На каком месте будет расположена твоя татуировка?",
+      "Размер татуировки?",
+      "Когда планируешь сделать татуировку?",
+      "Напиши свой ник",
+    ];
+
+    var f = document.forms.Form;
+    f.onchange = function () {
+      var n = f.querySelectorAll('[type="checkbox"]'),
+        l = f.querySelectorAll('[type="checkbox"]:checked');
+      for (var j = 0; j < n.length; j++)
+        if (l.length >= 1) {
+          n[j].disabled = true;
+          for (var i = 0; i < l.length; i++) l[i].disabled = false;
+        } else {
+          n[j].disabled = false;
+        }
+    };
+
+    var questionForms = [
+      `<input type="checkbox" id="yes" name="tattoo" value="yes">
+        <label for="yes">Да, есть</label><br>
+        <input type="checkbox" id="idea" name="tattoo" value="idea">
+        <label for="idea">Нет, но есть примерная идея</label><br>
+        <input type="checkbox" id="consultation" name="tattoo" value="consultation">
+        <label for="consultation">Нет, нужна консультация</label><br><br>`,
+      `<input type="checkbox" id="hand" name="tattoo-place" value="hand">
+        <label for="hand">Рука</label><br>
+        <input type="checkbox" id="back" name="tattoo-place" value="back">
+        <label for="back">Спина</label><br>
+        <input type="checkbox" id="neck" name="tattoo-place" value="neck">
+        <label for="neck">Шея</label><br>
+        <input type="checkbox" id="head" name="tattoo-place" value="head">
+        <label for="head">Голова</label><br>
+        <input type="checkbox" id="chest" name="tattoo-place" value="chest">
+        <label for="chest">Грудь</label><br>
+        <input type="checkbox" id="ribs" name="tattoo-place" value="ribs">
+        <label for="ribs">Ребра</label><br>
+        <input type="checkbox" id="stomach" name="tattoo-place" value="stomach">
+        <label for="stomach">Живот</label><br>
+        <input type="checkbox" id="thigh" name="tattoo-place" value="thigh">
+        <label for="thigh">Бедро</label><br>
+        <input type="checkbox" id="leg" name="tattoo-place" value="leg">
+        <label for="leg">Нога</label><br><br>`,
+      `<input type="checkbox" id="big" name="tattoo-size" value="big">
+        <label for="big">Большая</label><br>
+        <input type="checkbox" id="medium" name="tattoo-size" value="medium">
+        <label for="medium">Средняя</label><br>
+        <input type="checkbox" id="small" name="tattoo-size" value="small">
+        <label for="small">Маленькая</label><br><br>`,
+      `<input type="checkbox" id="soon" name="tattoo-time" value="soon">
+        <label for="soon">В ближайшие дни</label><br>
+        <input type="checkbox" id="weeks" name="tattoo-time" value="weeks">
+        <label for="weeks">Через несколько недель</label><br>
+        <input type="checkbox" id="think" name="tattoo-time" value="think">
+        <label for="think">Нужно подумать</label><br><br>`,
+      `<input type="text" id="nickname" name="nickname" placeholder="Ваш ник"><br><br>`,
+    ];
+
+    function openModal() {
+      modal.style.display = "block";
+      showQuestion(questionIndex);
+    }
+
+    function closeModal() {
+      modal.style.display = "none";
+    }
+
+    function showQuestion(index) {
+      document.getElementById("questionCounter").innerText =
+        " Вопрос " + (index + 1) + " из " + questions.length;
+      document.getElementById("question1").innerText = questions[index];
+      document.getElementById("form1").innerHTML = questionForms[index];
+      if (index === 0) {
+        document.querySelector(".prev-btn").style.display = "none";
+      } else {
+        document.querySelector(".prev-btn").style.display = "block";
+      }
+    }
+
+    function nextQuestion() {
+      var selectedOptions;
+
+      if (questionIndex === 0) {
+        selectedOptions = document.querySelectorAll(
+          'input[name="tattoo"]:checked'
+        );
+      } else if (questionIndex === 1) {
+        selectedOptions = document.querySelectorAll(
+          'input[name="tattoo-place"]:checked'
+        );
+      } else if (questionIndex === 2) {
+        selectedOptions = document.querySelectorAll(
+          'input[name="tattoo-size"]:checked'
+        );
+      } else if (questionIndex === 3) {
+        selectedOptions = document.querySelectorAll(
+          'input[name="tattoo-time"]:checked'
+        );
+      } else {
+        var nickname = document.getElementById("nickname").value;
+        if (nickname.trim() === "") {
+          alert("Введите ваш ник");
+          return;
+        } else {
+          closeModal();
+          alert("Спасибо, мы сохраним вашу анкету. Ждем вас!");
+          return;
+        }
+      }
+
+      if (
+        (questionIndex < 4 && selectedOptions.length === 0) ||
+        (questionIndex === 4 && nickname.trim() === "")
+      ) {
+        alert("Выберите вариант ответа");
+        return;
+      }
+
+      if (questionIndex < questions.length - 1) {
+        questionIndex++;
+        showQuestion(questionIndex);
+      }
+    }
+
+    function prevQuestion() {
+      questionIndex--;
+      showQuestion(questionIndex);
+    }
+
+    function togglePrevButton(element) {
+      if (
+        element.value === "yes" ||
+        element.value === "idea" ||
+        element.value === "consultation"
+      ) {
+        document.querySelector(".prev-btn").style.display = "none";
+      } else {
+        document.querySelector(".prev-btn").style.display = "block";
+      }
+    }
+
+  </script>
+</body>
+
+</html>

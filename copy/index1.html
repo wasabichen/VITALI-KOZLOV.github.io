@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Сайт с опросом</title>
+  <link rel="font-family" href="fonts/fonts.css">
+  <style>
+    body {
+      background-color: black;
+      background-image: url("fon.jpeg");
+      /* чтобы изображение занимало всю доступную область */
+      color: white;
+      /* цвет текста */
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-size: contain;
+      /* background-size: cover; */
+      background-position: center center;
+      background-attachment: fixed;
+      background-repeat: no-repeat;
+      /* отключаем повторение фонового изображения */
+    }
+
+    @media (max-width: 500px) {
+      body {
+        background-image: url("fon.jpeg");
+        background-size: cover;
+      }
+    }
+
+    .container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+
+    .title {
+      font-size: 36px;
+      /* увеличенный размер текста */
+      margin-bottom: 20px;
+    }
+
+    .container>button {
+      position: fixed;
+      bottom: 4%;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: rgb(154, 5, 5);
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      font-size: 21px;
+      cursor: pointer;
+    }
+
+    .button:hover {
+      background-color: rgb(119, 2, 2);
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1;
+      left: 100;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(0, 0, 0, 0.5);
+      animation: fadeIn 0.9s ease;
+      /* добавляем анимацию плавного появления */
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+
+      to {
+        opacity: 1;
+      }
+    }
+
+    .modal-content {
+      background-color: #fefefe;
+      margin: auto;
+      /* центрируем модальное окно по горизонтали и вертикали */
+      padding: 40px;
+      /* увеличение отступов внутри содержимого модального окна */
+      border: 1px solid #888;
+      width: 600px;
+      /* фиксированная ширина модального окна */
+      height: 300px;
+      /* фиксированная высота модального окна */
+      border-radius: 5px;
+      color: black;
+      /* черный цвет текста */
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 16px;
+      /* установка размера шрифта текста */
+    }
+
+    .close {
+      color: #aaa;
+      float: right;
+      font-size: 28px;
+      font-weight: bold;
+    }
+
+    .close:hover,
+    .close:focus {
+      color: black;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    .prev-btn,
+    .next-btn {
+      position: absolute;
+      bottom: 10px;
+      background-color: rgb(154, 5, 5);
+      color: white;
+      padding: 10px 20px;
+    }
+
+    .prev-btn {
+      left: 10px;
+    }
+
+    .next-btn {
+      right: 10px;
+    }
+
+    .question {
+      padding: 10px;
+      border-radius: 5px;
+      margin-bottom: 10px;
+    }
+
+    input[type="radio"]:checked+label {
+      background-color: #333;
+      /* Изменяем цвет фона выбранного ответа */
+      color: white;
+      /* Изменяем цвет текста выбранного ответа */
+      border-radius: 2px;
+      padding: 3px;
+    }
+
+    #questionCounter {
+      font-size: 1em;
+      font-weight: bold;
+      color: red;
+      /* Цвет шрифта */
+    }
+
+    .label {
+      font-size: 200px;
+      /* Увеличение расстояния между ответами */
+    }
+
+    label {
+      display: flex;
+      list-style: disc;
+      padding-top: 5px;
+      padding-bottom: 5px;
+    }
+
+    .checkbox-label::before {
+      content: '\2714';
+      display: inline-block;
+      width: 1em;
+      height: 1em;
+      margin-right: 0.5em;
+      font-size: 1.5em;
+      color: rgb(196, 196, 196);
+    }
+    .checkbox-label {
+  line-height: 1em; /* Добавлено значение line-height для согласования с высотой галочки */
+}
+
+    input[type="radio"] {
+      display: none;
+      /* Скрыть стандартный круглый input */
+    }
+
+    input[type="radio"]+.checkbox-label {
+      cursor: pointer;
+    }
+
+    input[type="radio"]:checked+.checkbox-label::before {
+      content: '\2714';
+      /* Unicode галочка */
+      color: white;
+      background-color: #333;
+      /* Изменяем цвет фона галочки для выбранного ответа */
+      border-radius: 2px;
+      padding: 3px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <h1 class="title">VITALI KOZLOV</h1>
+    <button class="button" onclick="openModal()">Пройти опрос</button>
+  </div>
+
+  <div id="myModal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeModal()">&times;</span>
+      <p id="questionCounter">1/5</p>
+      <p id="question1">У тебя есть эскиз татуировки?</p>
+      <form id="form1">
+        <input type="radio" id="yes" name="tattoo" value="yes" class="radio-input">
+        <label for="yes" class="checkbox-label">Да, есть</label><br>
+        <input type="radio" id="idea" name="tattoo" value="idea" class="radio-input">
+        <label for="idea" class="checkbox-label">Нет, но есть примерная идея</label><br>
+        <input type="radio" id="consultation" name="tattoo" value="consultation" class="radio-input">
+        <label for="consultation" class="checkbox-label">Нет, нужна консультация</label><br><br>
+
+      </form>
+      <button class="button prev-btn" onclick="prevQuestion()">Предыдущий</button>
+      <button class="button next-btn" onclick="nextQuestion()">Следующий</button>
+    </div>
+  </div>
+
+  <script>
+    var modal = document.getElementById("myModal");
+    var questionIndex = 0;
+    var questions = [
+      "У тебя есть эскиз татуировки?",
+      "На каком месте будет расположена твоя татуировка?",
+      "Размер татуировки?",
+      "Когда планируешь сделать татуировку?",
+      "Напиши свой ник",
+    ];
+
+    var questionForms = [
+      `<input type="radio" id="yes" name="tattoo" value="yes" class="radio-input">
+        <label for="yes" class="checkbox-label">Да, есть</label><br>
+        <input type="radio" id="idea" name="tattoo" value="idea" class="radio-input">
+        <label for="idea" class="checkbox-label">Нет, но есть примерная идея</label><br>
+        <input type="radio" id="consultation" name="tattoo" value="consultation" class="radio-input">
+        <label for="consultation" class="checkbox-label">Нет, нужна консультация</label><br><br>`,
+      `<input type="radio" id="hand" name="tattoo-place" value="hand" class="radio-input">
+        <label for="hand" class="checkbox-label">Рука</label><br>
+        <input type="radio" id="back" name="tattoo-place" value="back" class="radio-input">
+        <label for="back" class="checkbox-label">Спина</label><br>
+        <input type="radio" id="neck" name="tattoo-place" value="neck" class="radio-input">
+        <label for="neck" class="checkbox-label">Шея</label><br>
+        <input type="radio" id="head" name="tattoo-place" value="head" class="radio-input">
+        <label for="head" class="checkbox-label">Голова</label><br>
+        <input type="radio" id="chest" name="tattoo-place" value="chest" class="radio-input">
+        <label for="chest" class="checkbox-label">Грудь</label><br>
+        <input type="radio" id="ribs" name="tattoo-place" value="ribs" class="radio-input">
+        <label for="ribs" class="checkbox-label">Ребра</label><br>
+        <input type="radio" id="stomach" name="tattoo-place" value="stomach" class="radio-input">
+        <label for="stomach" class="checkbox-label">Живот</label><br>
+        <input type="radio" id="thigh" name="tattoo-place" value="thigh" class="radio-input">
+        <label for="thigh" class="checkbox-label">Бедро</label><br>
+        <input type="radio" id="leg" name="tattoo-place" value="leg" class="radio-input">
+        <label for="leg" class="checkbox-label">Нога</label><br><br>`,
+      `<input type="radio" id="big" name="tattoo-size" value="big" class="radio-input">
+        <label for="big" class="checkbox-label">Большая</label><br>
+        <input type="radio" id="medium" name="tattoo-size" value="medium" class="radio-input">
+        <label for="medium" class="checkbox-label">Средняя</label><br>
+        <input type="radio" id="small" name="tattoo-size" value="small" class="radio-input">
+        <label for="small" class="checkbox-label">Маленькая</label><br><br>`,
+      `<input type="radio" id="soon" name="tattoo-time" value="soon" class="radio-input">
+        <label for="soon" class="checkbox-label">В ближайшие дни</label><br>
+        <input type="radio" id="weeks" name="tattoo-time" value="weeks" class="radio-input">
+        <label for="weeks" class="checkbox-label">Через несколько недель</label><br>
+        <input type="radio" id="think" name="tattoo-time" value="think" class="radio-input">
+        <label for="think" class="checkbox-label">Нужно подумать</label><br><br>`,
+      `<input type="text" id="nickname" name="nickname" placeholder="Ваш ник"><br><br>`,
+    ];
+
+    function openModal() {
+      modal.style.display = "block";
+      showQuestion(questionIndex);
+    }
+
+    function closeModal() {
+      modal.style.display = "none";
+    }
+
+    function showQuestion(index) {
+      document.getElementById("questionCounter").innerText =
+        " Вопрос " + (index + 1) + " из " + questions.length;
+      document.getElementById("question1").innerText = questions[index];
+      document.getElementById("form1").innerHTML = questionForms[index];
+      if (index === 0) {
+        document.querySelector(".prev-btn").style.display = "none"; // Скрываем кнопку "Предыдущий" при первом вопросе
+      } else {
+        document.querySelector(".prev-btn").style.display = "block"; // Показываем кнопку "Предыдущий" при остальных вопросах
+      }
+    }
+
+    function nextQuestion() {
+      var selectedOptions;
+
+      if (questionIndex === 0) {
+        selectedOptions = document.querySelectorAll(
+          'input[name="tattoo"]:checked'
+        );
+      } else if (questionIndex === 1) {
+        selectedOptions = document.querySelectorAll(
+          'input[name="tattoo-place"]:checked'
+        );
+      } else if (questionIndex === 2) {
+        selectedOptions = document.querySelectorAll(
+          'input[name="tattoo-size"]:checked'
+        );
+      } else if (questionIndex === 3) {
+        selectedOptions = document.querySelectorAll(
+          'input[name="tattoo-time"]:checked'
+        );
+      } else {
+        var nickname = document.getElementById("nickname").value;
+        if (nickname.trim() === "") {
+          alert("Введите ваш ник");
+          return;
+        } else {
+          closeModal(); // Закрываем модальное окно после заполнения анкеты
+          alert("Спасибо, мы сохраним вашу анкету. Ждем вас!");
+          return;
+        }
+      }
+
+      if (
+        (questionIndex < 4 && selectedOptions.length === 0) ||
+        (questionIndex === 4 && nickname.trim() === "")
+      ) {
+        alert("Выберите вариант ответа");
+        return;
+      }
+
+      if (questionIndex < questions.length - 1) {
+        questionIndex++;
+        showQuestion(questionIndex);
+      }
+    }
+
+    function prevQuestion() {
+      questionIndex--;
+      showQuestion(questionIndex);
+    }
+  </script>
+</body>
+
+</html>

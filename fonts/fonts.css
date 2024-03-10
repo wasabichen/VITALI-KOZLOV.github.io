@@ -1,0 +1,9 @@
+@font-face {
+    font-family: "akzentica4fmedium";
+    src: url(./akzentica4fmedium-webfont.woff) format("woff"),
+        url(./akzentica4fmedium-webfont.woff2) format("woff2");
+}
+
+h1 {
+    font-family: 'akzentica4fmedium';
+}
